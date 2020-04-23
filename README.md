@@ -7,4 +7,4 @@ Implemented by noi2coco
 
 Reference manual available [here](https://noi2coco.github.io/ktaneLadderLottery/Manual/Ladder%20Lottery.html) or on [Timwi's Website](https://ktane.timwi.de/HTML/Ladder%20Lottery.html)
 
-[Subscribe to this module](https://steamcommunity.com/sharedfiles/filedetails/?id=) (requires the Steam version of the game)
+[Subscribe to this module](https://steamcommunity.com/sharedfiles/filedetails/?id=2071631185) (requires the Steam version of the game)
