@@ -14,9 +14,10 @@ MonoBehaviour:
   id: ladderLottery
   title: Ladder Lottery
   author: noi2coco
-  description: 'Module idea from ConManAU
-
-    Implemented by noi2coco'
+  description: "Module idea from ConManAU\r\n\r\nImplemented by noi2coco\r\n\r\nCurrently
+    supports:\r\n- Ruleseed\r\n- Twitch Plays\r\n\r\nManual :\r\nhttps://ktane.timwi.de/HTML/Ladder%20Lottery.html\r\nor
+    https://noi2coco.github.io/ktaneLadderLottery/Manual/Ladder%20Lottery.html\r\n\r\nSource
+    code:\r\nhttps://github.com/noi2coco/ktaneLadderLottery"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: f59eeafee0d749c4d8506791999a6eff, type: 3}
