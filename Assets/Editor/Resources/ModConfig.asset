@@ -18,6 +18,6 @@ MonoBehaviour:
     supports:\r\n- Ruleseed\r\n- Twitch Plays\r\n\r\nManual :\r\nhttps://ktane.timwi.de/HTML/Ladder%20Lottery.html\r\nor
     https://noi2coco.github.io/ktaneLadderLottery/Manual/Ladder%20Lottery.html\r\n\r\nSource
     code:\r\nhttps://github.com/noi2coco/ktaneLadderLottery"
-  version: 1.0
+  version: 1.2
   outputFolder: build
   previewImage: {fileID: 2800000, guid: f59eeafee0d749c4d8506791999a6eff, type: 3}
