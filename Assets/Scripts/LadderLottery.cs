@@ -9,11 +9,22 @@ using System.Text.RegularExpressions;
 
 public delegate bool IsActive(LadderLottery module);
 
+public class Rule
+{
+    public Rule(string rule, IsActive activation)
+    {
+        ruleString = rule;
+        isActive = activation;
+    }
+    public IsActive isActive;
+    public readonly string ruleString;
+}
+
 public class Link
 {
-    public Link(IsActive active, Column c)
+    public Link(Rule rule, Column c)
     {
-        isActive = active;
+        this.rule = rule;
         segment = new Segment(c);
     }
     public enum Point
@@ -55,7 +66,7 @@ public class Link
         return pt == segment.pt1 ? segment.pt2 : segment.pt1;
     }
     Segment segment;
-    public IsActive isActive;
+    public Rule rule;
 }
 
 public class LadderLottery : MonoBehaviour
@@ -78,19 +89,19 @@ public class LadderLottery : MonoBehaviour
     private bool _isCoroutineActive;
     private static T[] newArray<T>(params T[] array) { return array; }
     private List<Link> _links;
-    private List<IsActive> _rules = new List<IsActive>{
-        delegate (LadderLottery mod) { return Char.IsLetter(mod.Bomb.GetSerialNumber().First()); },
-        delegate (LadderLottery mod) { return mod.Bomb.GetPortPlates().Any(c => c.Contains(Port.Parallel.ToString()) && c.Contains(Port.Serial.ToString())); },
-        delegate (LadderLottery mod) { return mod.Bomb.GetSerialNumberNumbers().Sum() > 8; },
-        delegate (LadderLottery mod) { return mod.Bomb.GetStrikes() <= 1; },
-        delegate (LadderLottery mod) { return mod.Bomb.GetPortPlates().Any(c => c.Length == 0); },
-        delegate (LadderLottery mod) { return mod.Bomb.GetBatteryCount(Battery.D) % 2 == 0; },
-        delegate (LadderLottery mod) { return mod.Bomb.GetOnIndicators().Count() > mod.Bomb.GetOffIndicators().Count(); },
-        delegate (LadderLottery mod) { return mod.Bomb.IsIndicatorOn(Indicator.FRK) || mod.Bomb.IsIndicatorOn(Indicator.IND) || mod.Bomb.IsIndicatorOn(Indicator.MSA); },
-        delegate (LadderLottery mod) { return mod.Bomb.GetBatteryCount() >= 3; },
-        delegate (LadderLottery mod) { return mod.Bomb.GetSolvedModuleNames().Count() > mod.Bomb.GetSolvableModuleNames().Count() / 2; },
-        delegate (LadderLottery mod) { return mod.Bomb.IsIndicatorOff(Indicator.FRQ) || mod.Bomb.IsIndicatorOff(Indicator.SND) || mod.Bomb.IsIndicatorOff(Indicator.NSA); },
-        delegate (LadderLottery mod) { return mod.Bomb.GetTime() < mod._initialTime / 2; }
+    private List<Rule> _rules = new List<Rule>{
+        new Rule("First character of serial is a letter", delegate (LadderLottery mod) { return Char.IsLetter(mod.Bomb.GetSerialNumber().First()); }),
+        new Rule("Parallel and serial port on the same plate", delegate (LadderLottery mod) { return mod.Bomb.GetPortPlates().Any(c => c.Contains(Port.Parallel.ToString()) && c.Contains(Port.Serial.ToString())); }),
+        new Rule("Sum of serial digits > 8", delegate (LadderLottery mod) { return mod.Bomb.GetSerialNumberNumbers().Sum() > 8; }),
+        new Rule("0 or 1 strike", delegate (LadderLottery mod) { return mod.Bomb.GetStrikes() <= 1; }),
+        new Rule("Empty port plate", delegate (LadderLottery mod) { return mod.Bomb.GetPortPlates().Any(c => c.Length == 0); }),
+        new Rule("Even number of D batteries", delegate (LadderLottery mod) { return mod.Bomb.GetBatteryCount(Battery.D) % 2 == 0; }),
+        new Rule("More lit than unlit indicators", delegate (LadderLottery mod) { return mod.Bomb.GetOnIndicators().Count() > mod.Bomb.GetOffIndicators().Count(); }),
+        new Rule("Lit FRK, IND or MSA", delegate (LadderLottery mod) { return mod.Bomb.IsIndicatorOn(Indicator.FRK) || mod.Bomb.IsIndicatorOn(Indicator.IND) || mod.Bomb.IsIndicatorOn(Indicator.MSA); }),
+        new Rule("At least 3 batteries", delegate (LadderLottery mod) { return mod.Bomb.GetBatteryCount() >= 3; }),
+        new Rule("More modules solved than unsolved", delegate (LadderLottery mod) { return mod.Bomb.GetSolvedModuleNames().Count() > mod.Bomb.GetSolvableModuleNames().Count() / 2; }),
+        new Rule("Unlit FRQ, SND or NSA", delegate (LadderLottery mod) { return mod.Bomb.IsIndicatorOff(Indicator.FRQ) || mod.Bomb.IsIndicatorOff(Indicator.SND) || mod.Bomb.IsIndicatorOff(Indicator.NSA); }),
+        new Rule("Less than half of bomb time left", delegate (LadderLottery mod) { return mod.Bomb.GetTime() < mod._initialTime / 2; })
     };
     private List<Link.Column> _columns = new List<Link.Column>{
         Link.Column.Two,
@@ -161,7 +172,7 @@ public class LadderLottery : MonoBehaviour
             }
             else
             {
-                Debug.LogFormat("[Ladder Lottery #{0}] Strike ! Expected answer {1}. Button {2} pressed.", _moduleId, finalPoint.ToString(), index);
+                Debug.LogFormat("[Ladder Lottery #{0}] Strike ! Expected answer {1}. Path {2} pressed.", _moduleId, finalPoint.ToString(), (char)('A' + index));
                 Module.HandleStrike();
                 StartCoroutine(strikeCoroutine(index));
             }
@@ -171,11 +182,16 @@ public class LadderLottery : MonoBehaviour
     Link.Point getRightAnswer()
     {
         Link.Point point = _startingPoint;
+        List<string> log = new List<string>();
         foreach (Link link in _links)
         {
-            if (link.contains(point) && link.isActive(this))
+            if (link.contains(point) && link.rule.isActive(this))
+            {
+                log.Add(link.rule.ruleString);
                 point = link.getOther(point);
+            }
         }
+        Debug.LogFormat("[Ladder Lottery #{0}] Correct path: " + String.Join(", ", log.ToArray()), _moduleId);
         return point;
     }
 
